@@ -1,0 +1,8 @@
+numpy
+pandas
+polars
+matplotlib
+seaborn
+Scikit-learn
+lightgbm
+pyarrow
