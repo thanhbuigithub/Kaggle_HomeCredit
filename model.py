@@ -5,6 +5,7 @@ from sklearn.base import BaseEstimator, RegressorMixin
 from sklearn.metrics import roc_auc_score
 import lightgbm as lgb
 import pickle
+import matplotlib.pyplot as plt
 
 
 # Create a custom VotingModel class, API similar to sklearn
@@ -28,10 +29,11 @@ class VotingModel(BaseEstimator, RegressorMixin):
 
 
 class Model:
-    def __init__(self, model_params, num_folds=5):
+    def __init__(self, model_params, num_folds=5, output_dir=None):
         self.model = None
         self.model_params = model_params
         self.num_folds = num_folds
+        self.output_dir = output_dir
 
         self.fitted_models = []
         self.cv_scores = []
@@ -66,6 +68,9 @@ class Model:
             self.cv_scores.append(auc_score)
             print("Fold AUC score: ", auc_score)
             lgb.plot_metric(model)
+            plot_path = self.output_dir / 'metrics_fold_{}.png'.format(len(self.fitted_models))
+            plt.savefig(plot_path)
+            print("Plot saved. Check the file: ", plot_path)
 
         print("-" * 50)
         print("Creating the VotingModel ...")
