@@ -4,6 +4,7 @@ from sklearn.model_selection import TimeSeriesSplit, GroupKFold, StratifiedGroup
 from sklearn.base import BaseEstimator, RegressorMixin
 from sklearn.metrics import roc_auc_score
 import lightgbm as lgb
+import pickle
 
 
 # Create a custom VotingModel class, API similar to sklearn
@@ -51,6 +52,8 @@ class Model:
             print("Valid shape: ", X_valid.shape)
             print("Fitting the model ...")
             model = lgb.LGBMClassifier(**self.model_params)
+
+            # Initialize an empty dictionary to store evaluation results
             model.fit(
                 X_train, y_train,
                 eval_set=[(X_valid, y_valid)],
@@ -62,6 +65,7 @@ class Model:
             auc_score = roc_auc_score(y_valid, y_pred_valid)
             self.cv_scores.append(auc_score)
             print("Fold AUC score: ", auc_score)
+            lgb.plot_metric(model)
 
         print("-" * 50)
         print("Creating the VotingModel ...")
@@ -78,3 +82,18 @@ class Model:
         pred = pd.Series(self.model.predict_proba(X)[:, 1], index=X.index)
         print("Predictions completed.")
         return pred
+
+    def save_model(self, path):
+        print("--- Saving model ...")
+        with open(path, "wb") as f:
+            pickle.dump(self, f)
+        print("Model saved. Check the file: ", path)
+
+    @staticmethod
+    def load_model(path):
+        print("--- Loading model ...")
+        print("Model path: ", path)
+        with open(path, "rb") as f:
+            model = pickle.load(f)
+        print("Model loaded.")
+        return model
